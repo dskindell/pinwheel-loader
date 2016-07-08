@@ -1,6 +1,8 @@
 
 #include "pinwheel-loader.h"
 
+#define PROGRESS_RATE 100
+
 #if defined(_MSC_VER)
 #define OS_MSLEEP(x) Sleep(x)
 #else
@@ -20,7 +22,7 @@ void pinwheel_update_progress_test()
       sprintf(status, "%u/%u", i, 31);
       pinwheel_update_status(loader, status);
       pinwheel_update_progress(loader, i);
-      OS_MSLEEP(100);
+      OS_MSLEEP(PROGRESS_RATE);
    }
    pinwheel_stop(loader);
 
@@ -32,7 +34,7 @@ void pinwheel_update_progress_test()
       sprintf(status, "%u/%u", i, 29);
       pinwheel_update_status(loader, status);
       pinwheel_update_progress(loader, i);
-      OS_MSLEEP(100);
+      OS_MSLEEP(PROGRESS_RATE);
    }
    pinwheel_stop(loader);
 
@@ -52,7 +54,7 @@ void pinwheel_increment_progress_test()
       sprintf(status, "%u/%u", i, 31);
       pinwheel_update_status(loader, status);
       pinwheel_increment_progress(loader);
-      OS_MSLEEP(100);
+      OS_MSLEEP(PROGRESS_RATE);
    }
    pinwheel_stop(loader);
 
@@ -64,7 +66,7 @@ void pinwheel_increment_progress_test()
       sprintf(status, "%u/%u", i, 29);
       pinwheel_update_status(loader, status);
       pinwheel_increment_progress(loader);
-      OS_MSLEEP(100);
+      OS_MSLEEP(PROGRESS_RATE);
    }
    pinwheel_stop(loader);
 
@@ -83,7 +85,7 @@ void pinwheel_update_progress_and_status_test()
    {
       sprintf(status, "%u/%u", i, 31);
       pinwheel_update_progress_and_status(loader, i, status);
-      OS_MSLEEP(100);
+      OS_MSLEEP(PROGRESS_RATE);
    }
    pinwheel_stop(loader);
 
@@ -94,7 +96,7 @@ void pinwheel_update_progress_and_status_test()
    {
       sprintf(status, "%u/%u", i, 29);
       pinwheel_update_progress_and_status(loader, i, status);
-      OS_MSLEEP(100);
+      OS_MSLEEP(PROGRESS_RATE);
    }
    pinwheel_stop(loader);
 
@@ -114,7 +116,7 @@ void pinwheel_update_percent_test()
       sprintf(status, "%u/%u", i, 99);
       pinwheel_update_status(loader, status);
       pinwheel_update_percent(loader, i);
-      OS_MSLEEP(100);
+      OS_MSLEEP(PROGRESS_RATE);
    }
    pinwheel_stop(loader);
 
@@ -126,7 +128,7 @@ void pinwheel_update_percent_test()
       sprintf(status, "%u/%u", i, 101);
       pinwheel_update_status(loader, status);
       pinwheel_update_percent(loader, i);
-      OS_MSLEEP(100);
+      OS_MSLEEP(PROGRESS_RATE);
    }
    pinwheel_stop(loader);
 
@@ -145,7 +147,7 @@ void pinwheel_update_percent_and_status_test()
    {
       sprintf(status, "%u/%u", i, 99);
       pinwheel_update_percent_and_status(loader, i, status);
-      OS_MSLEEP(100);
+      OS_MSLEEP(PROGRESS_RATE);
    }
    pinwheel_stop(loader);
 
@@ -156,7 +158,7 @@ void pinwheel_update_percent_and_status_test()
    {
       sprintf(status, "%u/%u", i, 101);
       pinwheel_update_percent_and_status(loader, i, status);
-      OS_MSLEEP(100);
+      OS_MSLEEP(PROGRESS_RATE);
    }
    pinwheel_stop(loader);
 

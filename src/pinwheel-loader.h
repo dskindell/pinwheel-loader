@@ -38,7 +38,6 @@ typedef int             pinwheel_thread_handle_t;
 #endif
 
 #define MAX_PINWHEEL_LOADER_STATUS_BUFFER 96
-#define MAX_PINWHEEL_PULSE_LENGTH         4
 #define MAX_PINWHEEL_SYMBOLS              4
 
 struct _PinwheelLoader
@@ -48,9 +47,6 @@ struct _PinwheelLoader
    char                     dash_symbol;
    unsigned int             loader_fps;
    unsigned int             pinwheel_rpm;
-   unsigned int             min_pulse_velocity;
-   unsigned int             max_pulse_velocity;
-   char                     pulse_symbol[MAX_PINWHEEL_PULSE_LENGTH + 1];
    char                     pinwheel_symbols[MAX_PINWHEEL_SYMBOLS + 1];
    char                     status[MAX_PINWHEEL_LOADER_STATUS_BUFFER];
    pinwheel_mutex_t        *mutex;

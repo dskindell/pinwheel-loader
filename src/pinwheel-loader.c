@@ -29,12 +29,9 @@ void reset_pinwheel_progress_loader(PPinwheelLoader loader, int num_tasks)
 {
    loader->stream = stdout;
    loader->dash_symbol = '|';
-   strncpy(loader->pulse_symbol, "##", sizeof(loader->pulse_symbol));
    strncpy(loader->pinwheel_symbols, "|/-\\", sizeof(loader->pinwheel_symbols));
    loader->loader_fps = 20;
    loader->pinwheel_rpm = 60;
-   loader->min_pulse_velocity = 2;
-   loader->max_pulse_velocity = 30;
    memset(loader->status, 0, sizeof(loader->status));
    loader->signal_exit = 0;
    loader->current_task = 0;
@@ -193,22 +190,17 @@ COMMON_THREAD_ROUTINE(pinwheel_loader, ploader)
 {
    const PPinwheelLoader loader = (const PPinwheelLoader)ploader;
    PPinwheelLoader loader_copy = (PPinwheelLoader)malloc(sizeof(PinwheelLoader));
-
    const unsigned background_size = strlen(starting_background) + 1;
    char          *drawn_loader = (char*)malloc(background_size);
    int            sleep_in_useconds    = 0;
    int            pinwheel_cycle_count = 0;
-   int            pulse_cycle_count    = 0;
-   int            pulse_velocity_diff  = 0;
    int            last_line_size       = 0;
    unsigned int   pinwheel_i           = 0;
    unsigned       dash_count           = 0;
    unsigned       cycle_count          = 0;
    unsigned int   i                    = 0;
    char           pinwheel             = 0;
-   float          current_percent      = 0.0;
-   long int       pulse_i              = 0;
-   long int       pulse_symbol_count   = 0;
+   float          percent              = 0.0;
 
    pinwheel_lock(loader);
    memcpy(loader_copy, loader, sizeof(PinwheelLoader));
@@ -225,36 +217,21 @@ COMMON_THREAD_ROUTINE(pinwheel_loader, ploader)
       memcpy(loader_copy, loader, sizeof(PinwheelLoader));
       pinwheel_unlock(loader);
 
-      current_percent = ((float)loader_copy->current_task / (float)loader_copy->number_of_tasks);
+      percent = ((float)loader_copy->current_task / (float)loader_copy->number_of_tasks);
+      dash_count = (unsigned)(percent*(background_size - 1));
+
       sleep_in_useconds = 1000000 / loader_copy->loader_fps;
-      pinwheel_cycle_count = loader_copy->loader_fps / (2 * sizeof(loader_copy->pinwheel_symbols)*(loader_copy->pinwheel_rpm / 60));
-      if (pinwheel_cycle_count == 0) pinwheel_cycle_count = 1;
-      pulse_velocity_diff = loader_copy->max_pulse_velocity - loader_copy->min_pulse_velocity;
-      pulse_cycle_count = (current_percent == 0.0)
-         ? (int)(loader_copy->loader_fps / loader_copy->min_pulse_velocity)
-         : (int)(loader_copy->loader_fps / (loader_copy->min_pulse_velocity +
-            (current_percent * pulse_velocity_diff)));
-      pulse_symbol_count = (long int)strlen(loader_copy->pulse_symbol);
-      pulse_i = -1 * pulse_symbol_count;
+
+      pinwheel_cycle_count = loader_copy->loader_fps / (2 * strlen(loader_copy->pinwheel_symbols)*(loader_copy->pinwheel_rpm / 60));
+      if (pinwheel_cycle_count == 0) { pinwheel_cycle_count = 1; }
 
       strcpy(drawn_loader, starting_background);
-      if (pulse_cycle_count <= 0)
-      {
-         pulse_cycle_count = 1;
-      }
 
-      dash_count = (unsigned)(current_percent*(background_size - 1));
       for (i = 0; i < background_size-1; ++i)
       {
          if (i < dash_count + 1)
          {
-            if ((long int)dash_count > pulse_symbol_count
-               && (long int)i >= pulse_i
-               && (long int)i < pulse_i + pulse_symbol_count)
-            {
-               drawn_loader[i] = loader_copy->pulse_symbol[i - pulse_i];
-            }
-            else if (!isdigit(drawn_loader[i]))
+            if (!isdigit(drawn_loader[i]))
             {
                drawn_loader[i] = loader_copy->dash_symbol;
             }
@@ -270,17 +247,12 @@ COMMON_THREAD_ROUTINE(pinwheel_loader, ploader)
       }
 
       if (cycle_count % pinwheel_cycle_count == 0)
-         pinwheel = _spin_wheel(loader_copy->pinwheel_symbols, &pinwheel_i);
-      if ((long int)dash_count > pulse_symbol_count
-         && pulse_cycle_count > 0
-         && cycle_count % pulse_cycle_count == 0)
       {
-         if (++pulse_i > (long)dash_count)
-            pulse_i = -1 * pulse_symbol_count;
+         pinwheel = _spin_wheel(loader_copy->pinwheel_symbols, &pinwheel_i);
       }
       pinwheel_clearline(loader_copy->stream, last_line_size);
       last_line_size = fprintf(loader_copy->stream, "[%s] %3d%% %s",
-         drawn_loader, (int)(100 * current_percent), loader_copy->status);
+         drawn_loader, (int)(100 * percent), loader_copy->status);
       fflush(loader_copy->stream);
       USLEEP(sleep_in_useconds);
    }

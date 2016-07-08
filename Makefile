@@ -7,6 +7,7 @@ ifeq ($(MAKEFILE_DIR),)
   endif
 endif
 export PROJECT_DIR   ?= $(realpath $(MAKEFILE_DIR))
+export SOLUTION_DIR  ?= $(realpath $(MAKEFILE_DIR))
 
 PROJECT_NAME  := pinwheel-loader
 $(PROJECT_NAME).interface_version = 0
@@ -50,6 +51,16 @@ LDFLAGS += -m32
 endif
 
 $(PROJECT_NAME): $(PROJECT_NAME).lib $(PROJECT_NAME).so $(PROJECT_NAME).pkg
+
+$(PROJECT_NAME).ftest: $(CONFIG_BIN_DIRECTORY)/pinwheel-loader-test
+
+$(CONFIG_BIN_DIRECTORY)/pinwheel-loader-test: \
+  $(wildcard $(PROJECT_DIR)/test/functional/*.h) \
+  $(wildcard $(PROJECT_DIR)/test/functional/*.c) \
+  $($(PROJECT_NAME).lib) \
+  $(MAKEFILE_DIR)/Makefile
+	[ -d $(@D) ] || mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(EXTRA_CFAGS) $(filter %.a %.o %.c,$^) -o $@ $(LDFLAGS) $(EXTRA_LDLFAGS)
 
 $(PROJECT_NAME).pkg: $($(PROJECT_NAME).pkg)
 
@@ -100,3 +111,4 @@ $($(PROJECT_NAME).deps): $(PROJECT_DIR)/Makefile
 
 clean:
 	rm -rf $(BIN_DIRECTORY) $(LIB_DIRECTORY) $(SCRATCH_DIRECTORY)
+

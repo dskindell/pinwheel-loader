@@ -175,7 +175,7 @@ void pinwheel_update_percent_and_status(PPinwheelLoader loader, int percent, con
 
 static char _spin_wheel(char * pinwheel_symbols, unsigned int *state)
 {
-   *state = (*state + 1) % sizeof(pinwheel_symbols);
+   *state = (*state + 1) % strlen(pinwheel_symbols);
    return pinwheel_symbols[*state];
 }
 
@@ -186,6 +186,7 @@ static void pinwheel_clearline(FILE* stream, int n)
    {
       fprintf(stream, "\b \b");
    }
+   fflush(stream);
 }
 
 COMMON_THREAD_ROUTINE(pinwheel_loader, ploader)
@@ -227,6 +228,7 @@ COMMON_THREAD_ROUTINE(pinwheel_loader, ploader)
       current_percent = ((float)loader_copy->current_task / (float)loader_copy->number_of_tasks);
       sleep_in_useconds = 1000000 / loader_copy->loader_fps;
       pinwheel_cycle_count = loader_copy->loader_fps / (2 * sizeof(loader_copy->pinwheel_symbols)*(loader_copy->pinwheel_rpm / 60));
+      if (pinwheel_cycle_count == 0) pinwheel_cycle_count = 1;
       pulse_velocity_diff = loader_copy->max_pulse_velocity - loader_copy->min_pulse_velocity;
       pulse_cycle_count = (current_percent == 0.0)
          ? (int)(loader_copy->loader_fps / loader_copy->min_pulse_velocity)
@@ -276,10 +278,10 @@ COMMON_THREAD_ROUTINE(pinwheel_loader, ploader)
          if (++pulse_i > (long)dash_count)
             pulse_i = -1 * pulse_symbol_count;
       }
-
       pinwheel_clearline(loader_copy->stream, last_line_size);
       last_line_size = fprintf(loader_copy->stream, "[%s] %3d%% %s",
          drawn_loader, (int)(100 * current_percent), loader_copy->status);
+      fflush(loader_copy->stream);
       USLEEP(sleep_in_useconds);
    }
    free(drawn_loader);

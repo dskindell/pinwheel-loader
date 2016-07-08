@@ -38,33 +38,37 @@ typedef int             pinwheel_thread_handle_t;
 #endif
 
 #define MAX_PINWHEEL_LOADER_STATUS_BUFFER 96
+#define MAX_PINWHEEL_PULSE_LENGTH         4
+#define MAX_PINWHEEL_SYMBOLS              4
 
 struct _PinwheelLoader
 {
    FILE                    *stream;
+   int                      number_of_tasks;
    char                     dash_symbol;
-   char                     pulse_symbol[2];
-   char                     pinwheel_symbols[4];
    unsigned int             loader_fps;
    unsigned int             pinwheel_rpm;
    unsigned int             min_pulse_velocity;
    unsigned int             max_pulse_velocity;
-   volatile int             percent;
+   char                     pulse_symbol[MAX_PINWHEEL_PULSE_LENGTH + 1];
+   char                     pinwheel_symbols[MAX_PINWHEEL_SYMBOLS + 1];
    char                     status[MAX_PINWHEEL_LOADER_STATUS_BUFFER];
-   volatile int             signal_exit;
    pinwheel_mutex_t        *mutex;
-   int                      current_progress;
-   int                      minimum_progress;
-   int                      maximum_progress;
    pinwheel_thread_handle_t thread;
    pinwheel_thread_t        thread_id;
+   volatile int             current_task;
+   volatile int             signal_exit;
 };
 typedef struct _PinwheelLoader PinwheelLoader;
 typedef struct _PinwheelLoader *PPinwheelLoader;
 
-PPinwheelLoader create_pinwheel_loader(int min_progress, int max_progress);
+PPinwheelLoader create_pinwheel_progress_loader(int num_tasks);
 
-void reset_pinwheel_loader(PPinwheelLoader loader, int min_progress, int max_progress);
+PPinwheelLoader create_pinwheel_percent_loader();
+
+void reset_pinwheel_progress_loader(PPinwheelLoader loader, int num_tasks);
+
+void reset_pinwheel_percent_loader(PPinwheelLoader loader);
 
 void destroy_pinwheel_loader(PPinwheelLoader loader);
 
@@ -84,10 +88,6 @@ void pinwheel_increment_progress_and_status(PPinwheelLoader loader, const char *
 
 void pinwheel_update_percent(PPinwheelLoader loader, int percent);
 
-void pinwheel_increment_percent(PPinwheelLoader loader);
-
 void pinwheel_update_percent_and_status(PPinwheelLoader loader, int percent, const char * status);
-
-void pinwheel_increment_percent_and_status(PPinwheelLoader loader, const char * status);
 
 #endif /* PINWHEEL_LOADER_H_ */
